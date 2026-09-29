@@ -13,7 +13,31 @@ const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
 const anthropic = apiKey ? new Anthropic({ apiKey }) : null;
 
+/** Webseiten, die den Server von außen ansprechen dürfen, z. B. die Seite auf GitHub Pages. */
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((o) => o.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+/** Obergrenze für KI-Checks pro Tag, damit die Kosten nicht davonlaufen. */
+const DAILY_LIMIT = Number(process.env.DAILY_LIMIT ?? 100);
+
 const app = express();
+// Hinter dem Proxy eines Hosters (z. B. Render) steht die echte Adresse im Kopf X-Forwarded-For.
+if (process.env.TRUST_PROXY) app.set("trust proxy", Number(process.env.TRUST_PROXY) || 1);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Max-Age", "86400");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 app.use(express.json({ limit: "5mb" }));
 
 /** Einfache Bremse gegen zu viele Anfragen: höchstens 10 KI-Checks pro Minute und Adresse. */
@@ -26,6 +50,18 @@ function tooMany(ip: string): boolean {
   return recent.length > 10;
 }
 
+let day = "";
+let checksToday = 0;
+function dailyLimitReached(): boolean {
+  const today = new Date().toISOString().slice(0, 10);
+  if (today !== day) {
+    day = today;
+    checksToday = 0;
+  }
+  checksToday++;
+  return checksToday > DAILY_LIMIT;
+}
+
 app.get("/api/status", (_req, res) => {
   res.json({ ai: Boolean(anthropic) });
 });
@@ -36,6 +72,8 @@ app.post("/api/ai-check", async (req, res) => {
 
   const brand = validateBrand(req.body?.brand);
   if (!brand) return res.status(400).json({ error: "Firmenname und gültige Farben werden benötigt." });
+
+  if (dailyLimitReached()) return res.status(429).json({ error: "Für heute sind alle KI-Checks aufgebraucht. Morgen geht es weiter." });
 
   const logo = typeof req.body?.logoPngBase64 === "string" && req.body.logoPngBase64.length < 4_000_000 ? req.body.logoPngBase64 : null;
 

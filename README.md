@@ -43,6 +43,19 @@ ANTHROPIC_API_KEY=dein-schlüssel
 
 Ohne Schlüssel läuft alles, nur der Knopf „KI-Check der Marke“ ist dann ausgeblendet. Der Schlüssel bleibt auf dem Server und kommt nie im Browser an. Die Datei `.env` wird nicht mit hochgeladen.
 
+### KI-Check auf der Live-Seite
+
+Die Oberfläche liegt auf GitHub Pages, der kleine Server für den KI-Check bei [Render](https://render.com) in Frankfurt. Einrichtung, einmalig:
+
+1. Bei Render mit dem GitHub-Konto anmelden.
+2. **New > Blueprint** wählen und dieses Repository verbinden. Render liest `render.yaml` und legt den Dienst `markenwerk-api` an.
+3. Beim Anlegen fragt Render nach `ANTHROPIC_API_KEY`: den Schlüssel eintragen.
+4. Heißt die Adresse des Dienstes nicht `https://markenwerk-api.onrender.com`, auf GitHub unter **Settings > Secrets and variables > Actions > Variables** die Variable `API_URL` mit der richtigen Adresse anlegen und die Seite neu veröffentlichen.
+
+Schutz vor hohen Kosten: höchstens 10 KI-Checks pro Minute und Adresse und höchstens 100 pro Tag (`DAILY_LIMIT`). Zusätzlich in der [Anthropic Console](https://console.anthropic.com) ein Ausgabenlimit setzen.
+
+Im kostenlosen Tarif schläft der Server nach 15 Minuten ohne Besuch ein. Der erste Aufruf danach weckt ihn, der Knopf für den KI-Check erscheint dann nach etwa einer Minute.
+
 ## Befehle
 
 | Befehl | Was er tut |

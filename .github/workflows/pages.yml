@@ -27,6 +27,8 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          # Adresse des KI-Check-Servers bei Render. Lässt sich über die Repository-Variable API_URL ändern.
+          VITE_API_URL: ${{ vars.API_URL || 'https://markenwerk-api.onrender.com' }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

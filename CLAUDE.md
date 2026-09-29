@@ -15,7 +15,7 @@ Maria (Marketing bei Renamic) treibt das Projekt, Ralf ist ihr Chef und entschei
 ## Stand und Zweige
 
 - Gearbeitet wird auf dem Zweig `markenwerk-design`. Dort liegt das aktuelle Design im Apple-Stil mit Logo- und Fotoposition.
-- `main` ist die Live-Seite unter <https://marialuxoxo.github.io/Signature-Move/> und wird bei jedem Push automatisch über GitHub Pages veröffentlicht (`.github/workflows/pages.yml`). Seit dem 29.09.2026 zeigt sie das Design aus `markenwerk-design`. Auf GitHub Pages gibt es keinen Server, der KI-Check ist dort deshalb ausgeblendet.
+- `main` ist die Live-Seite unter <https://marialuxoxo.github.io/Signature-Move/> und wird bei jedem Push automatisch über GitHub Pages veröffentlicht (`.github/workflows/pages.yml`). Seit dem 29.09.2026 zeigt sie das Design aus `markenwerk-design`. Der Server für den KI-Check läuft getrennt bei Render (`render.yaml`, Region Frankfurt); die Seite spricht ihn über `VITE_API_URL` an, gesetzt in `pages.yml`. Einrichtung steht im README.
 - `markenwerk-design` erst nach Marias ausdrücklicher Freigabe in `main` übernehmen, weil sich damit die Live-Seite ändert.
 - Das Repository heißt noch `signature-move`. Der Produktname ist wieder Markenwerk.
 
