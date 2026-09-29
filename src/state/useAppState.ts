@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from "react";
-import type { AppState, Brand, Person, Tab } from "../types";
+import { DEFAULT_LOGO_POS, type AppState, type Brand, type Person, type Tab } from "../types";
 import { DEMO_LOGO, DEMO_STATE } from "../demo";
 import { uid } from "../lib/text";
 
@@ -45,7 +45,10 @@ function load(): AppState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const s = JSON.parse(raw) as AppState;
-      if (s?.brand && Array.isArray(s.team) && s.team.length) return s;
+      if (s?.brand && Array.isArray(s.team) && s.team.length) {
+        // Ältere gespeicherte Stände kennen die Logo-Position noch nicht.
+        return { ...s, brand: { ...s.brand, logoPos: { ...DEFAULT_LOGO_POS, ...(s.brand.logoPos ?? {}) } } };
+      }
     }
   } catch {
     // Kein Zugriff auf den Speicher oder kaputte Daten: mit Beispieldaten starten.

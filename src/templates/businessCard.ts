@@ -1,4 +1,4 @@
-import type { Brand, LayoutStyle, Person } from "../types";
+import type { Brand, CardLayout, LayoutStyle, Person } from "../types";
 import { getFont } from "../lib/fonts";
 import { readableOnWhite, textOn } from "../lib/colors";
 import { cropMarks, svgDocument, svgImage, svgText } from "./svg";
@@ -7,35 +7,50 @@ import { cropMarks, svgDocument, svgImage, svgText } from "./svg";
 export const CARD_W = 850;
 export const CARD_H = 550;
 
-export function cardFront(person: Person, brand: Brand, style: LayoutStyle = brand.style): string {
+/**
+ * Vorderseite. Der Stil bestimmt die Gestaltung (Linie, farbige Kante oder nichts),
+ * die Position bestimmt, wo das Logo sitzt.
+ */
+export function cardFront(
+  person: Person,
+  brand: Brand,
+  style: LayoutStyle = brand.style,
+  pos: CardLayout = brand.logoPos?.card ?? "top",
+): string {
   const f = getFont(brand.font).stack;
   const main = brand.mainColor;
   const accent = brand.accentColor;
+  const quiet = style === "ruhig";
+  const roleColor = quiet ? "#5E676C" : readableOnWhite(main);
   const contact = [
     person.phone && `T  ${person.phone}`,
     person.mobile && `M  ${person.mobile}`,
     person.email,
     brand.web,
   ].filter(Boolean) as string[];
-  const parts: string[] = [`<rect width="${CARD_W}" height="${CARD_H}" fill="#FFFFFF"/>`];
 
+  const parts: string[] = [`<rect width="${CARD_W}" height="${CARD_H}" fill="#FFFFFF"/>`];
   if (style === "kante") {
     parts.push(`<rect width="110" height="${CARD_H}" fill="${main}"/><rect x="110" width="10" height="${CARD_H}" fill="${accent}"/>`);
-    parts.push(svgImage(brand.logo, 170, 50, 300, 90));
-    parts.push(svgText(f, 170, 250, 46, person.name, { weight: 700 }));
-    parts.push(svgText(f, 170, 300, 30, person.role, { color: readableOnWhite(main), weight: 600 }));
-    contact.forEach((c, i) => parts.push(svgText(f, 170, 380 + i * 36, 26, c, { color: "#333333" })));
-  } else if (style === "ruhig") {
-    parts.push(svgText(f, 70, 120, 44, person.name, { weight: 600 }));
-    parts.push(svgText(f, 70, 166, 28, person.role, { color: "#5E676C" }));
-    contact.forEach((c, i) => parts.push(svgText(f, 70, 300 + i * 36, 26, c, { color: "#333333" })));
-    parts.push(svgImage(brand.logo, 560, 410, 230, 80, "xMaxYMid"));
+  }
+  const x = style === "kante" ? 170 : 70;
+  const accentBar = (y: number) => (style === "klar" ? `<rect x="${x}" y="${y}" width="60" height="6" fill="${accent}"/>` : "");
+  const name = (y: number, size: number) => svgText(f, x, y, size, person.name, { weight: quiet ? 600 : 700 });
+  const role = (y: number, size: number) => svgText(f, x, y, size, person.role, { color: roleColor, weight: quiet ? 400 : 600 });
+  const lines = (y: number, step: number, size: number) =>
+    contact.map((c, i) => svgText(f, x, y + i * step, size, c, { color: "#333333" })).join("");
+
+  if (pos === "bottom") {
+    parts.push(accentBar(58), name(130, 44), role(174, 28), lines(250, 34, 24));
+    parts.push(svgImage(brand.logo, 560, 400, 230, 90, "xMaxYMid"));
+  } else if (pos === "right") {
+    const divider = style === "kante" ? { c: accent, w: 4 } : quiet ? { c: "#D5D8DC", w: 2 } : { c: readableOnWhite(main), w: 3 };
+    parts.push(accentBar(118), name(190, 40), role(232, 26), lines(300, 32, 22));
+    parts.push(`<rect x="560" y="80" width="${divider.w}" height="390" fill="${divider.c}"/>`);
+    parts.push(svgImage(brand.logo, 585, 180, 230, 190, "xMidYMid"));
   } else {
-    parts.push(svgImage(brand.logo, 70, 55, 320, 100));
-    parts.push(`<rect x="70" y="205" width="60" height="6" fill="${accent}"/>`);
-    parts.push(svgText(f, 70, 270, 46, person.name, { weight: 700 }));
-    parts.push(svgText(f, 70, 314, 28, person.role, { color: readableOnWhite(main), weight: 600 }));
-    contact.forEach((c, i) => parts.push(svgText(f, 70, 385 + i * 34, 24, c, { color: "#333333" })));
+    parts.push(svgImage(brand.logo, x, 55, 320, 100));
+    parts.push(accentBar(205), name(270, 46), role(314, 28), lines(385, 34, 24));
   }
   return parts.join("");
 }

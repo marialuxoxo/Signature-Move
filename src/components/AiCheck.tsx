@@ -25,7 +25,7 @@ export function AiCheck({ brand, dispatch, notify }: Props) {
     try {
       const img = await loadImage(brand.logo).catch(() => null);
       const png = img ? toPngBase64(img) : null;
-      const { logo: _logo, swatches: _swatches, ...data } = brand;
+      const { logo: _logo, swatches: _swatches, logoPos: _logoPos, ...data } = brand;
       setResult(await runAiCheck(data, png));
       setStatus("");
     } catch (e) {

@@ -1,7 +1,6 @@
 import { useId, useRef, type ReactElement } from "react";
 import type { AppState, Person, Tab } from "../types";
 import type { Action } from "../state/useAppState";
-import { LAYOUT_STYLES } from "../types";
 import { signatureDocument, signatureHtml } from "../templates/signature";
 import { CARD_H, CARD_W, cardBack, cardFront, cardSheet } from "../templates/businessCard";
 import { A4_H, A4_W, letterhead } from "../templates/letterhead";
@@ -91,16 +90,6 @@ export function Preview({ state, active, dispatch, notify }: Props) {
       </div>
 
       <div className="toolbar">
-        <div className="toolbar-group">
-          <span className="toolbar-label" id={`${ids}-style`}>Gestaltung</span>
-          <div className="segmented" role="radiogroup" aria-labelledby={`${ids}-style`}>
-            {LAYOUT_STYLES.map((s) => (
-              <button key={s.id} type="button" role="radio" aria-checked={brand.style === s.id} title={s.hint} onClick={() => dispatch({ type: "brand", patch: { style: s.id } })}>
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
         <div className="toolbar-group">
           <label className="toolbar-label" htmlFor={`${ids}-person`}>Für</label>
           <select id={`${ids}-person`} className="toolbar-select" value={active.id} onChange={(e) => dispatch({ type: "select", id: e.target.value })}>

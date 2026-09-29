@@ -62,3 +62,42 @@ describe("Dateinamen", () => {
     expect(slug("")).toBe("datei");
   });
 });
+
+describe("Logo-Position", () => {
+  const logoFirst = (html: string) => html.indexOf("<img") < html.indexOf(person.name);
+
+  it("Signatur: Logo links und oben vor dem Namen, rechts und unten danach", () => {
+    expect(logoFirst(signatureHtml(person, brand, "klar", "left"))).toBe(true);
+    expect(logoFirst(signatureHtml(person, brand, "klar", "top"))).toBe(true);
+    expect(logoFirst(signatureHtml(person, brand, "klar", "right"))).toBe(false);
+    expect(logoFirst(signatureHtml(person, brand, "klar", "bottom"))).toBe(false);
+  });
+
+  it("Signatur: nimmt die gespeicherte Position, wenn keine übergeben wird", () => {
+    const b = { ...brand, logoPos: { ...brand.logoPos, signature: "right" as const } };
+    expect(logoFirst(signatureHtml(person, b))).toBe(false);
+  });
+
+  it.each(styles)("Signatur: alle Positionen funktionieren im Stil %s", (style) => {
+    for (const pos of ["left", "top", "bottom", "right"] as const) {
+      const html = signatureHtml(person, brand, style, pos);
+      expect(html).toContain(person.name);
+      expect(html).toContain("<img");
+    }
+  });
+
+  it("Visitenkarte: Logo oben, unten rechts oder rechts neben einer Linie", () => {
+    expect(cardFront(person, brand, "klar", "top")).toContain('<image href');
+    expect(cardFront(person, brand, "klar", "bottom")).toContain('x="560" y="400"');
+    const right = cardFront(person, brand, "klar", "right");
+    expect(right).toContain('<rect x="560" y="80"');
+    expect(right).toContain('x="585" y="180"');
+  });
+
+  it("Briefkopf: Logo links, mittig oder rechts", () => {
+    const d = new Date(2026, 8, 23);
+    expect(letterhead(person, brand, "ruhig", d, "left")).toContain('x="250" y="120"');
+    expect(letterhead(person, brand, "ruhig", d, "center")).toContain('x="725" y="120"');
+    expect(letterhead(person, brand, "ruhig", d, "right")).toContain('x="1250" y="120"');
+  });
+});

@@ -1,6 +1,5 @@
 import { useId, useRef, useState } from "react";
 import type { Brand } from "../types";
-import { LAYOUT_STYLES } from "../types";
 import type { Action } from "../state/useAppState";
 import { FONTS, getFont } from "../lib/fonts";
 import { extractColors, loadImage, readFileAsDataUrl } from "../lib/browser";
@@ -52,12 +51,11 @@ export function BrandPanel({ brand, dispatch, aiAvailable, notify }: Props) {
     }
   }
 
-  const styleLabel = LAYOUT_STYLES.find((s) => s.id === brand.style)?.label ?? "Klar";
   const summary = (
     <>
       <span className="mini-swatch" style={{ background: brand.mainColor }} />
       <span className="mini-swatch" style={{ background: brand.accentColor }} />
-      {getFont(brand.font).name}, Gestaltung {styleLabel}
+      {getFont(brand.font).name}
     </>
   );
 

@@ -1,4 +1,4 @@
-import type { Brand, LayoutStyle, Person } from "../types";
+import type { Brand, LayoutStyle, LetterLayout, Person } from "../types";
 import { getFont } from "../lib/fonts";
 import { svgImage, svgText } from "./svg";
 
@@ -11,7 +11,13 @@ export const A4_H = 2970;
  * Anschriftfeld ab 45 mm von oben und 20 mm von links, Falzmarken bei 105 mm und 210 mm,
  * Lochmarke bei 148,5 mm. Alle Werte in Zehntelmillimetern.
  */
-export function letterhead(person: Person, brand: Brand, style: LayoutStyle = brand.style, date = new Date()): string {
+export function letterhead(
+  person: Person,
+  brand: Brand,
+  style: LayoutStyle = brand.style,
+  date = new Date(),
+  pos: LetterLayout = brand.logoPos?.letter ?? "right",
+): string {
   const f = getFont(brand.font).stack;
   const main = brand.mainColor;
   const accent = brand.accentColor;
@@ -19,8 +25,13 @@ export function letterhead(person: Person, brand: Brand, style: LayoutStyle = br
   const out: string[] = [`<rect width="${A4_W}" height="${A4_H}" fill="#FFFFFF"/>`];
 
   if (style === "kante") out.push(`<rect width="${A4_W}" height="40" fill="${main}"/><rect y="40" width="${A4_W}" height="10" fill="${accent}"/>`);
-  out.push(svgImage(brand.logo, 1250, 120, 650, 220, "xMaxYMid"));
-  if (style === "klar") out.push(`<rect x="250" y="330" width="120" height="8" fill="${accent}"/>`);
+  // Logo links, mittig oder rechts im Kopf
+  const logoBox = pos === "left" ? { x: 250, align: "xMinYMid" } : pos === "center" ? { x: 725, align: "xMidYMid" } : { x: 1250, align: "xMaxYMid" };
+  out.push(svgImage(brand.logo, logoBox.x, 120, 650, 220, logoBox.align));
+  if (style === "klar") {
+    const barX = pos === "center" ? 990 : pos === "right" ? 1780 : 250;
+    out.push(`<rect x="${barX}" y="360" width="120" height="8" fill="${accent}"/>`);
+  }
 
   // Falz- und Lochmarken
   out.push(

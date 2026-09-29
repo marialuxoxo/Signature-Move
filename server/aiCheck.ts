@@ -2,7 +2,7 @@ import type { AiCheckResult, Brand, LayoutStyle } from "../src/types";
 import { FONTS, getFont } from "../src/lib/fonts";
 import { contrast } from "../src/lib/colors";
 
-export type BrandInput = Omit<Brand, "logo" | "swatches">;
+export type BrandInput = Omit<Brand, "logo" | "swatches" | "logoPos">;
 
 const STYLES: LayoutStyle[] = ["klar", "kante", "ruhig"];
 

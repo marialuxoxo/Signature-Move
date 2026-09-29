@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppState } from "./state/useAppState";
 import { fetchStatus } from "./lib/api";
 import { BrandPanel } from "./components/BrandPanel";
+import { LayoutPanel } from "./components/LayoutPanel";
 import { CompanyForm } from "./components/CompanyForm";
 import { TeamPanel } from "./components/TeamPanel";
 import { Preview } from "./components/Preview";
@@ -52,6 +53,7 @@ export default function App() {
       <div className="layout">
         <aside className="sidebar" aria-label="Eingaben">
           <BrandPanel brand={state.brand} dispatch={dispatch} aiAvailable={aiAvailable} notify={notify} />
+          <LayoutPanel brand={state.brand} dispatch={dispatch} />
           <CompanyForm brand={state.brand} dispatch={dispatch} />
           <TeamPanel team={state.team} active={active} dispatch={dispatch} />
           <p className="sidebar-note">Deine Eingaben bleiben in diesem Browser gespeichert.</p>
