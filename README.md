@@ -10,8 +10,10 @@ Die Firma lädt ihr Logo hoch, die Farben werden automatisch erkannt, das Team w
 
 - Logo hochladen (PNG, JPG, SVG, WebP), Farben werden aus dem Logo gelesen
 - Firmendaten einmal pflegen, inklusive Notdienst und Pflichtangaben
-- Team anlegen und bearbeiten
-- **E-Mail-Signatur** in drei Gestaltungen (Klar, Kante, Ruhig), zum Kopieren oder als HTML-Datei
+- Team anlegen und bearbeiten, mit Porträtfoto pro Person (wird automatisch rund zugeschnitten)
+- **Aufbau vorab wählen:** Stil (Klar, Kante, Ruhig), Position des Logos und des Porträtfotos, per Vorschaubildchen
+- **Übersicht** mit allen Vorlagen zusammen auf einer Fläche in der Kundenfarbe
+- **E-Mail-Signatur** zum Kopieren oder als HTML-Datei
 - **Visitenkarte** 85 × 55 mm, Vorder- und Rückseite, als Druckbogen mit Schnittmarken (SVG)
 - **Briefkopf** DIN A4 nach DIN 5008 Form B (SVG)
 - **KI-Check** mit Claude: Einschätzung der Marke, Vorschläge für Schrift, Gestaltung und Claim
@@ -63,7 +65,8 @@ server/
   index.ts       Kleiner Server: liefert die App aus und spricht mit Claude
   aiCheck.ts     Anweisung an Claude und Auswertung der Antwort
 docs/
-  ROADMAP.md     Fahrplan
+  ROADMAP.md         Fahrplan
+  PROJEKTVERLAUF.md  Idee, Entscheidungen, Designrunden, Plagiat-Check, offene Punkte
 ```
 
 **Grundidee:** Die Vorlagen sind feste, sauber gestaltete Bausteine. Die KI gestaltet nicht frei, sondern bereitet vor und schlägt vor. So bleibt die Qualität immer gleich.
