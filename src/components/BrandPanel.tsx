@@ -62,9 +62,9 @@ export function BrandPanel({ brand, dispatch, aiAvailable, notify }: Props) {
   );
 
   return (
-    <Section step={1} title="Marke" summary={summary} defaultOpen>
+    <Section title="Marke" summary={summary} defaultOpen>
       <label
-        className={`logo-drop${dragging ? " is-over" : ""}`}
+        className={`card logo-drop${dragging ? " is-over" : ""}`}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
@@ -72,7 +72,7 @@ export function BrandPanel({ brand, dispatch, aiAvailable, notify }: Props) {
         <span className="logo-drop-preview"><img src={brand.logo} alt="Aktuelles Logo" /></span>
         <span className="logo-drop-text">
           <span className="logo-drop-action"><UploadIcon /> Logo ersetzen</span>
-          <span className="logo-drop-hint">PNG, JPG, SVG oder WebP bis 3 MB. Datei hierher ziehen oder klicken.</span>
+          <span className="logo-drop-hint">PNG, JPG, SVG oder WebP bis 3{" "}MB. Einfach hierher ziehen.</span>
         </span>
         <input
           ref={input}
@@ -85,56 +85,60 @@ export function BrandPanel({ brand, dispatch, aiAvailable, notify }: Props) {
 
       <div className="group">
         <h3 className="group-title">Farben</h3>
-        <div className="color-chips">
-          {(Object.keys(COLOR_LABEL) as ColorKey[]).map((key) => (
-            <label className="color-chip" key={key} htmlFor={`${ids}-${key}`}>
-              <span className="color-chip-fill" style={{ background: brand[key] }} />
-              <span className="color-chip-meta">
-                <span className="color-chip-name">{COLOR_LABEL[key]}</span>
-                <span className="color-chip-hex">{brand[key].toUpperCase()}</span>
-              </span>
-              <input
-                id={`${ids}-${key}`}
-                type="color"
-                value={brand[key]}
-                onChange={(e) => dispatch({ type: "brand", patch: { [key]: e.target.value.toUpperCase() } })}
-              />
-            </label>
-          ))}
-        </div>
-
-        {brand.swatches.length > 0 && (
-          <div className="from-logo">
-            <span className="from-logo-label">Aus dem Logo erkannt</span>
-            <div className="swatches">
-              {brand.swatches.map((hex) => (
-                <button
-                  key={hex}
-                  type="button"
-                  className="swatch"
-                  style={{ background: hex }}
-                  title={`${hex} als ${COLOR_LABEL[target]} übernehmen`}
-                  aria-label={`${hex} als ${COLOR_LABEL[target]} übernehmen`}
-                  onClick={() => dispatch({ type: "brand", patch: { [target]: hex } })}
+        <div className="card card-pad">
+          <div className="color-chips">
+            {(Object.keys(COLOR_LABEL) as ColorKey[]).map((key) => (
+              <label className="color-chip" key={key} htmlFor={`${ids}-${key}`}>
+                <span className="color-chip-fill" style={{ background: brand[key] }} />
+                <span className="color-chip-meta">
+                  <span className="color-chip-name">{COLOR_LABEL[key]}</span>
+                  <span className="color-chip-hex">{brand[key].toUpperCase()}</span>
+                </span>
+                <input
+                  id={`${ids}-${key}`}
+                  type="color"
+                  value={brand[key]}
+                  onChange={(e) => dispatch({ type: "brand", patch: { [key]: e.target.value.toUpperCase() } })}
                 />
-              ))}
-            </div>
-            <div className="segmented segmented-small" role="radiogroup" aria-label="Logofarbe übernehmen als">
-              {(Object.keys(COLOR_LABEL) as ColorKey[]).map((key) => (
-                <button key={key} type="button" role="radio" aria-checked={target === key} onClick={() => setTarget(key)}>
-                  {key === "mainColor" ? "als Haupt" : "als Akzent"}
-                </button>
-              ))}
-            </div>
+              </label>
+            ))}
           </div>
-        )}
+
+          {brand.swatches.length > 0 && (
+            <div className="from-logo">
+              <span className="from-logo-label">Aus dem Logo erkannt</span>
+              <div className="swatches">
+                {brand.swatches.map((hex) => (
+                  <button
+                    key={hex}
+                    type="button"
+                    className="swatch"
+                    style={{ background: hex }}
+                    title={`${hex} als ${COLOR_LABEL[target]} übernehmen`}
+                    aria-label={`${hex} als ${COLOR_LABEL[target]} übernehmen`}
+                    onClick={() => dispatch({ type: "brand", patch: { [target]: hex } })}
+                  />
+                ))}
+              </div>
+              <div className="segmented segmented-small" role="radiogroup" aria-label="Logofarbe übernehmen als">
+                {(Object.keys(COLOR_LABEL) as ColorKey[]).map((key) => (
+                  <button key={key} type="button" role="radio" aria-checked={target === key} onClick={() => setTarget(key)}>
+                    {key === "mainColor" ? "als Haupt" : "als Akzent"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="field">
-        <label htmlFor={`${ids}-font`}>Hausschrift</label>
-        <select id={`${ids}-font`} value={brand.font} onChange={(e) => dispatch({ type: "brand", patch: { font: e.target.value as Brand["font"] } })}>
-          {FONTS.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-        </select>
+      <div className="card">
+        <div className="field">
+          <label htmlFor={`${ids}-font`}>Hausschrift</label>
+          <select id={`${ids}-font`} value={brand.font} onChange={(e) => dispatch({ type: "brand", patch: { font: e.target.value as Brand["font"] } })}>
+            {FONTS.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+          </select>
+        </div>
       </div>
 
       {aiAvailable && <AiCheck brand={brand} dispatch={dispatch} notify={notify} />}

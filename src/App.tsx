@@ -45,8 +45,7 @@ export default function App() {
           <LogoMark />
           <h1 className="wordmark">Markenwerk</h1>
         </div>
-        <p className="claim">Logo rein. Alles fertig.</p>
-        <button className={`btn btn-quiet btn-small appbar-reset${confirmReset ? " is-confirming" : ""}`} type="button" onClick={handleReset}>
+        <button className={`btn-link appbar-reset${confirmReset ? " is-confirming" : ""}`} type="button" onClick={handleReset}>
           {confirmReset ? "Wirklich alles ersetzen?" : "Beispieldaten laden"}
         </button>
       </header>

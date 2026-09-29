@@ -61,3 +61,11 @@ export function SparkIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function CheckIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="m3.5 8.5 3 3 6-7" />
+    </svg>
+  );
+}

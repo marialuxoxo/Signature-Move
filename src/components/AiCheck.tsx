@@ -21,7 +21,7 @@ export function AiCheck({ brand, dispatch, notify }: Props) {
   async function run() {
     setBusy(true);
     setResult(null);
-    setStatus("Die KI schaut sich die Marke an. Das dauert meist 10 bis 30 Sekunden.");
+    setStatus("Die KI schaut sich deine Marke an. Das dauert meist 10 bis 30 Sekunden.");
     try {
       const img = await loadImage(brand.logo).catch(() => null);
       const png = img ? toPngBase64(img) : null;
@@ -52,13 +52,16 @@ export function AiCheck({ brand, dispatch, notify }: Props) {
   );
 
   return (
-    <div className="ai-check">
+    <div className="card card-pad ai-check">
       <div className="ai-check-head">
-        <h3 className="group-title">KI-Check</h3>
-        <p className="ai-check-intro">Prüft Logo, Farben und Lesbarkeit und schlägt Schrift, Gestaltung und Claim vor.</p>
+        <span className="ai-check-icon" aria-hidden="true"><SparkIcon /></span>
+        <div>
+          <h3 className="ai-check-title">KI-Check</h3>
+          <p className="ai-check-intro">Prüft Logo, Farben und Lesbarkeit und schlägt Schrift, Gestaltung und Claim vor.</p>
+        </div>
       </div>
       <button className="btn btn-secondary" type="button" onClick={run} disabled={busy}>
-        <SparkIcon /> {busy ? "Wird geprüft" : "Marke prüfen lassen"}
+        {busy ? "Wird geprüft" : "Marke prüfen lassen"}
       </button>
       {status && <p className="ai-status" aria-live="polite">{status}</p>}
       {result && (

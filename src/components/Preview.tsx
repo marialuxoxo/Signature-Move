@@ -76,16 +76,18 @@ export function Preview({ state, active, dispatch, notify }: Props) {
     ),
   };
 
-  const people = `${team.length} ${team.length === 1 ? "Person" : "Personen"}`;
+  const people = `${team.length}\u00a0${team.length === 1 ? "Person" : "Personen"}`;
 
   return (
     <main className="canvas">
-      <div className="tabs" role="tablist" aria-label="Ansicht">
-        {TABS.map((t) => (
-          <button key={t.id} role="tab" type="button" aria-selected={tab === t.id} onClick={() => open(t.id)}>
-            <span>{t.label}</span>
-          </button>
-        ))}
+      <div className="tabs-wrap">
+        <div className="tabs" role="tablist" aria-label="Ansicht">
+          {TABS.map((t) => (
+            <button key={t.id} role="tab" type="button" aria-selected={tab === t.id} onClick={() => open(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="toolbar">
@@ -108,12 +110,12 @@ export function Preview({ state, active, dispatch, notify }: Props) {
         {actions[tab] && <div className="toolbar-actions">{actions[tab]}</div>}
       </div>
 
-      <div className={`stage stage-${tab}`} style={{ background: tint(brand.mainColor, 0.13) }}>
+      <div className={`stage stage-${tab}`} style={{ background: tint(brand.mainColor, 0.08) }}>
         {tab === "overview" && (
           <>
             <div className="hero">
-              <h2 className="hero-title">Alles fertig. Fürs ganze Team.</h2>
-              <p className="hero-sub">Signatur, Visitenkarte und Briefkopf für {people}, alles aus einem Logo. Klick auf ein Teil, um es groß zu sehen und herunterzuladen.</p>
+              <h2 className="hero-title">Logo rein. Alles fertig.</h2>
+              <p className="hero-sub">Signatur, Visitenkarte und Briefkopf für {people}. Klick auf ein Teil, um es groß zu sehen.</p>
             </div>
             <Showcase brand={brand} person={active} onOpen={open} />
           </>

@@ -1,9 +1,15 @@
-/** Das Markenwerk-Zeichen: ein gelbes Quadrat mit einem M, wie ein Stempel. */
-export function LogoMark({ size = 32 }: { size?: number }) {
+/**
+ * Das Markenwerk-Zeichen: drei überlappende Kreise in den Druckfarben Cyan, Magenta und Gelb.
+ * Wo sie sich überlagern, entstehen wie im Druck neue Farben.
+ */
+export function LogoMark({ size = 26 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className="logo-mark">
-      <rect width="64" height="64" rx="14" fill="#FFD000" />
-      <path d="M16 46V18h6l10 14 10-14h6v28h-7V30l-9 12-9-12v16z" fill="#1A1C1F" />
+      <g style={{ mixBlendMode: "multiply", isolation: "isolate" }}>
+        <circle cx="24" cy="24" r="17" fill="#00AEEF" style={{ mixBlendMode: "multiply" }} />
+        <circle cx="40" cy="24" r="17" fill="#EC008C" style={{ mixBlendMode: "multiply" }} />
+        <circle cx="32" cy="38" r="17" fill="#FFE600" style={{ mixBlendMode: "multiply" }} />
+      </g>
     </svg>
   );
 }

@@ -8,7 +8,7 @@ import { SvgMarkup } from "./SvgMarkup";
 
 /** Feste Bühne, die als Ganzes auf die verfügbare Breite skaliert wird. */
 const STAGE_W = 1100;
-const STAGE_H = 660;
+const STAGE_H = 640;
 
 interface Props {
   brand: Brand;
