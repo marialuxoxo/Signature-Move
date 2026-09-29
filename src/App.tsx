@@ -55,7 +55,7 @@ export default function App() {
           <BrandPanel brand={state.brand} dispatch={dispatch} aiAvailable={aiAvailable} notify={notify} />
           <LayoutPanel brand={state.brand} dispatch={dispatch} />
           <CompanyForm brand={state.brand} dispatch={dispatch} />
-          <TeamPanel team={state.team} active={active} dispatch={dispatch} />
+          <TeamPanel team={state.team} active={active} dispatch={dispatch} notify={notify} />
           <p className="sidebar-note">Deine Eingaben bleiben in diesem Browser gespeichert.</p>
         </aside>
         <Preview state={state} active={active} dispatch={dispatch} notify={notify} />

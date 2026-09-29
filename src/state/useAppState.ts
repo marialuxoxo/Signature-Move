@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from "react";
-import { DEFAULT_LOGO_POS, type AppState, type Brand, type Person, type Tab } from "../types";
+import { DEFAULT_LOGO_POS, DEFAULT_PHOTO_POS, type AppState, type Brand, type Person, type Tab } from "../types";
 import { DEMO_LOGO, DEMO_STATE } from "../demo";
 import { uid } from "../lib/text";
 
@@ -47,7 +47,14 @@ function load(): AppState {
       const s = JSON.parse(raw) as AppState;
       if (s?.brand && Array.isArray(s.team) && s.team.length) {
         // Ältere gespeicherte Stände kennen die Logo-Position noch nicht.
-        return { ...s, brand: { ...s.brand, logoPos: { ...DEFAULT_LOGO_POS, ...(s.brand.logoPos ?? {}) } } };
+        return {
+          ...s,
+          brand: {
+            ...s.brand,
+            logoPos: { ...DEFAULT_LOGO_POS, ...(s.brand.logoPos ?? {}) },
+            photoPos: { ...DEFAULT_PHOTO_POS, ...(s.brand.photoPos ?? {}) },
+          },
+        };
       }
     }
   } catch {
@@ -68,9 +75,10 @@ export function useAppState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch {
-        // Sehr große Logos passen evtl. nicht in den Speicher. Dann ohne Logo speichern.
+        // Sehr große Bilder passen evtl. nicht in den Speicher. Dann ohne Logo und Fotos speichern.
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, brand: { ...state.brand, logo: DEMO_LOGO } }));
+          const slim = { ...state, brand: { ...state.brand, logo: DEMO_LOGO }, team: state.team.map((p) => ({ ...p, photo: "" })) };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
         } catch {
           /* ignorieren */
         }

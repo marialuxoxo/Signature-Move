@@ -58,6 +58,30 @@ export function toPngBase64(img: HTMLImageElement, maxSide = 600): string | null
   }
 }
 
+/**
+ * Macht aus einem Foto ein rundes Porträt (PNG mit durchsichtigen Ecken).
+ * Rund im Bild selbst, damit es auch in Outlook rund bleibt, das keine abgerundeten Ecken kennt.
+ * Der Ausschnitt sitzt etwas höher als die Mitte, weil Gesichter meist oben im Bild sind.
+ */
+export async function makePortrait(file: File, size = 240): Promise<string> {
+  const img = await loadImage(await readFileAsDataUrl(file));
+  const w = img.naturalWidth || size;
+  const h = img.naturalHeight || size;
+  const side = Math.min(w, h);
+  const sx = (w - side) / 2;
+  const sy = Math.max(0, (h - side) * 0.3);
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Kein Zeichenbereich");
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+  return canvas.toDataURL("image/png");
+}
+
 /** Bietet einen Text als Datei zum Herunterladen an. */
 export function downloadFile(filename: string, content: string, mime: string): void {
   const blob = new Blob([content], { type: `${mime};charset=utf-8` });

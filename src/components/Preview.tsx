@@ -13,6 +13,9 @@ import { Showcase } from "./Showcase";
 import { SvgMarkup } from "./SvgMarkup";
 import { CopyIcon, DownloadIcon } from "./Icons";
 
+/** In der Vorschau zeigen fehlende Fotos einen Platzhalter, in Downloads nicht. */
+const PREVIEW = { placeholder: true };
+
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "Übersicht" },
   { id: "signature", label: "Signatur" },
@@ -119,7 +122,7 @@ export function Preview({ state, active, dispatch, notify }: Props) {
               <p className="composer-text">Guten Tag Herr Beispiel,</p>
               <p className="composer-text">anbei erhalten Sie die Einladung samt Tagesordnung.</p>
               <p className="composer-text composer-text-last">Viele Grüße</p>
-              <div className="composer-signature" ref={sigRef} dangerouslySetInnerHTML={{ __html: signatureHtml(active, brand) }} />
+              <div className="composer-signature" ref={sigRef} dangerouslySetInnerHTML={{ __html: signatureHtml(active, brand, undefined, undefined, PREVIEW) }} />
             </div>
           </div>
         )}
@@ -127,7 +130,7 @@ export function Preview({ state, active, dispatch, notify }: Props) {
         {tab === "card" && (
           <div className="proofs">
             <ProofSheet label="Vorderseite" size="85 × 55 mm" className="proof-card">
-              <SvgMarkup markup={svgDocument(cardFront(active, brand), CARD_W, CARD_H, "Visitenkarte Vorderseite")} />
+              <SvgMarkup markup={svgDocument(cardFront(active, brand, undefined, undefined, PREVIEW), CARD_W, CARD_H, "Visitenkarte Vorderseite")} />
             </ProofSheet>
             <ProofSheet label="Rückseite" size="85 × 55 mm" className="proof-card">
               <SvgMarkup markup={svgDocument(cardBack(brand), CARD_W, CARD_H, "Visitenkarte Rückseite")} />

@@ -9,6 +9,7 @@ import { SvgMarkup } from "./SvgMarkup";
 /** Feste Bühne, die als Ganzes auf die verfügbare Breite skaliert wird. */
 const STAGE_W = 1100;
 const STAGE_H = 640;
+const PREVIEW = { placeholder: true };
 
 interface Props {
   brand: Brand;
@@ -60,14 +61,14 @@ export function Showcase({ brand, person, onOpen }: Props) {
           <div className="lay-mail-bar"><i /><i /><i /><span>Neue Nachricht</span></div>
           <div className="lay-mail-body">
             <p>Viele Grüße</p>
-            <div dangerouslySetInnerHTML={{ __html: signatureHtml(person, brand) }} />
+            <div dangerouslySetInnerHTML={{ __html: signatureHtml(person, brand, undefined, undefined, PREVIEW) }} />
           </div>
         </Item>
         <Item className="lay-card-back" label="Visitenkarte" tab="card" onOpen={onOpen}>
           <SvgMarkup markup={svgDocument(cardBack(brand), CARD_W, CARD_H, "Visitenkarte Rückseite")} />
         </Item>
         <Item className="lay-card-front" label="Visitenkarte" tab="card" onOpen={onOpen}>
-          <SvgMarkup markup={svgDocument(cardFront(person, brand), CARD_W, CARD_H, "Visitenkarte Vorderseite")} />
+          <SvgMarkup markup={svgDocument(cardFront(person, brand, undefined, undefined, PREVIEW), CARD_W, CARD_H, "Visitenkarte Vorderseite")} />
         </Item>
       </div>
     </div>

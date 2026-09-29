@@ -20,6 +20,40 @@ export interface LogoPositions {
 
 export const DEFAULT_LOGO_POS: LogoPositions = { signature: "left", card: "top", letter: "right" };
 
+/** Wo das Porträtfoto der Person sitzt, jeweils bezogen auf ihren Text. */
+export type SignaturePhotoLayout = "none" | "left" | "right" | "top";
+export type CardPhotoLayout = "none" | "left" | "right";
+
+export interface PhotoPositions {
+  signature: SignaturePhotoLayout;
+  card: CardPhotoLayout;
+}
+
+export const DEFAULT_PHOTO_POS: PhotoPositions = { signature: "none", card: "none" };
+
+export const PHOTO_POS_OPTIONS: {
+  signature: { id: SignaturePhotoLayout; label: string }[];
+  card: { id: CardPhotoLayout; label: string }[];
+} = {
+  signature: [
+    { id: "none", label: "Ohne" },
+    { id: "left", label: "Links" },
+    { id: "right", label: "Rechts" },
+    { id: "top", label: "Oben" },
+  ],
+  card: [
+    { id: "none", label: "Ohne" },
+    { id: "left", label: "Links" },
+    { id: "right", label: "Rechts" },
+  ],
+};
+
+/** Einstellungen, die nur die Vorschau betreffen. */
+export interface RenderOptions {
+  /** Zeigt einen grauen Platzhalter, wenn eine Person noch kein Foto hat. */
+  placeholder?: boolean;
+}
+
 export const LOGO_POS_OPTIONS: {
   signature: { id: SignatureLayout; label: string }[];
   card: { id: CardLayout; label: string }[];
@@ -64,6 +98,8 @@ export interface Brand {
   style: LayoutStyle;
   /** Position des Logos in Signatur, Visitenkarte und Briefkopf. */
   logoPos: LogoPositions;
+  /** Position des Porträtfotos in Signatur und Visitenkarte. */
+  photoPos: PhotoPositions;
   /** Logo als Data-URL. Im echten Betrieb später eine gehostete URL. */
   logo: string;
   /** Aus dem Logo erkannte Farben. */
@@ -78,6 +114,8 @@ export interface Person {
   phone: string;
   mobile: string;
   email: string;
+  /** Rund zugeschnittenes Porträtfoto als Data-URL, leer wenn keins da ist. */
+  photo?: string;
 }
 
 export type Tab = "overview" | "signature" | "card" | "letter";

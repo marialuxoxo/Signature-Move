@@ -1,7 +1,9 @@
-import type { Brand, CardLayout, LayoutStyle, Person } from "../types";
+import type { Brand, CardLayout, CardPhotoLayout, LayoutStyle, Person, RenderOptions } from "../types";
 import { getFont } from "../lib/fonts";
 import { readableOnWhite, textOn } from "../lib/colors";
 import { cropMarks, svgDocument, svgImage, svgText } from "./svg";
+import { silhouetteSvg } from "./photo";
+import { esc } from "../lib/text";
 
 /** Visitenkarte im Standardformat 85 × 55 mm. */
 export const CARD_W = 850;
@@ -9,13 +11,15 @@ export const CARD_H = 550;
 
 /**
  * Vorderseite. Der Stil bestimmt die Gestaltung (Linie, farbige Kante oder nichts),
- * die Position bestimmt, wo das Logo sitzt.
+ * die Position bestimmt, wo das Logo sitzt. Das Porträtfoto sitzt links oder rechts vom Text.
  */
 export function cardFront(
   person: Person,
   brand: Brand,
   style: LayoutStyle = brand.style,
   pos: CardLayout = brand.logoPos?.card ?? "top",
+  opts: RenderOptions = {},
+  photoPos: CardPhotoLayout = brand.photoPos?.card ?? "none",
 ): string {
   const f = getFont(brand.font).stack;
   const main = brand.mainColor;
@@ -33,24 +37,57 @@ export function cardFront(
   if (style === "kante") {
     parts.push(`<rect width="110" height="${CARD_H}" fill="${main}"/><rect x="110" width="10" height="${CARD_H}" fill="${accent}"/>`);
   }
-  const x = style === "kante" ? 170 : 70;
-  const accentBar = (y: number) => (style === "klar" ? `<rect x="${x}" y="${y}" width="60" height="6" fill="${accent}"/>` : "");
-  const name = (y: number, size: number) => svgText(f, x, y, size, person.name, { weight: quiet ? 600 : 700 });
-  const role = (y: number, size: number) => svgText(f, x, y, size, person.role, { color: roleColor, weight: quiet ? 400 : 600 });
-  const lines = (y: number, step: number, size: number) =>
-    contact.map((c, i) => svgText(f, x, y + i * step, size, c, { color: "#333333" })).join("");
+
+  // Foto nur, wenn eins da ist, oder als Platzhalter in der Vorschau
+  const hasPhoto = photoPos !== "none" && Boolean(person.photo || opts.placeholder);
+  const photo = (cx: number, cy: number, r: number) =>
+    person.photo
+      ? `<image href="${esc(person.photo)}" x="${cx - r}" y="${cy - r}" width="${2 * r}" height="${2 * r}" preserveAspectRatio="xMidYMid slice"/>`
+      : silhouetteSvg(cx, cy, r, "mw-card-photo");
+
+  const x0 = style === "kante" ? 170 : 70;
+  // Foto links schiebt den Text nach rechts
+  const photoLeft = hasPhoto && photoPos === "left";
+  const photoRight = hasPhoto && photoPos === "right";
+
+  const layout = (x: number) => ({
+    accentBar: (y: number) => (style === "klar" ? `<rect x="${x}" y="${y}" width="60" height="6" fill="${accent}"/>` : ""),
+    name: (y: number, size: number) => svgText(f, x, y, size, person.name, { weight: quiet ? 600 : 700 }),
+    role: (y: number, size: number) => svgText(f, x, y, size, person.role, { color: roleColor, weight: quiet ? 400 : 600 }),
+    lines: (y: number, step: number, size: number) =>
+      contact.map((c, i) => svgText(f, x, y + i * step, size, c, { color: "#333333" })).join(""),
+  });
 
   if (pos === "bottom") {
-    parts.push(accentBar(58), name(130, 44), role(174, 28), lines(250, 34, 24));
+    const x = photoLeft ? x0 + 170 : x0;
+    const t = layout(x);
+    parts.push(t.accentBar(58), t.name(130, 44), t.role(174, 28), t.lines(250, 34, 24));
+    if (photoLeft) parts.push(photo(x0 + 70, 180, 70));
+    if (photoRight) parts.push(photo(710, 180, 70));
     parts.push(svgImage(brand.logo, 560, 400, 230, 90, "xMaxYMid"));
   } else if (pos === "right") {
     const divider = style === "kante" ? { c: accent, w: 4 } : quiet ? { c: "#D5D8DC", w: 2 } : { c: readableOnWhite(main), w: 3 };
-    parts.push(accentBar(118), name(190, 40), role(232, 26), lines(300, 32, 22));
-    parts.push(`<rect x="560" y="80" width="${divider.w}" height="390" fill="${divider.c}"/>`);
-    parts.push(svgImage(brand.logo, 585, 180, 230, 190, "xMidYMid"));
+    const x = photoLeft ? x0 + 120 : x0;
+    const t = layout(x);
+    const small = photoLeft ? 19 : 22;
+    parts.push(t.accentBar(118), t.name(190, photoLeft ? 36 : 40), t.role(232, photoLeft ? 24 : 26), t.lines(300, 30, small));
+    if (photoLeft) parts.push(photo(x0 + 50, 250, 50));
+    const dividerX = photoLeft ? 600 : 560;
+    parts.push(`<rect x="${dividerX}" y="80" width="${divider.w}" height="390" fill="${divider.c}"/>`);
+    if (photoRight) {
+      // Foto über dem Logo in der rechten Spalte
+      parts.push(photo(700, 185, 70));
+      parts.push(svgImage(brand.logo, 590, 300, 220, 130, "xMidYMid"));
+    } else {
+      parts.push(svgImage(brand.logo, dividerX + 25, 180, CARD_W - dividerX - 60, 190, "xMidYMid"));
+    }
   } else {
-    parts.push(svgImage(brand.logo, x, 55, 320, 100));
-    parts.push(accentBar(205), name(270, 46), role(314, 28), lines(385, 34, 24));
+    parts.push(svgImage(brand.logo, x0, 55, 320, 100));
+    const x = photoLeft ? x0 + 170 : x0;
+    const t = layout(x);
+    parts.push(t.accentBar(205), t.name(270, 46), t.role(314, 28), t.lines(385, 34, 24));
+    if (photoLeft) parts.push(photo(x0 + 70, 330, 70));
+    if (photoRight) parts.push(photo(710, 330, 70));
   }
   return parts.join("");
 }

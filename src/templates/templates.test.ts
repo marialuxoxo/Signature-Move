@@ -101,3 +101,37 @@ describe("Logo-Position", () => {
     expect(letterhead(person, brand, "ruhig", d, "right")).toContain('x="1250" y="120"');
   });
 });
+
+describe("Porträtfoto", () => {
+  const FOTO = "data:image/png;base64,AAAA";
+  const withPhoto = { ...person, photo: FOTO };
+  const b = (sig: "none" | "left" | "right" | "top", card: "none" | "left" | "right" = "none") => ({ ...brand, photoPos: { signature: sig, card } });
+
+  it("Signatur: Foto links vor dem Namen, rechts danach", () => {
+    const left = signatureHtml(withPhoto, b("left"));
+    expect(left.indexOf(FOTO)).toBeLessThan(left.indexOf(person.name));
+    const right = signatureHtml(withPhoto, b("right"));
+    expect(right.indexOf(FOTO)).toBeGreaterThan(right.indexOf(person.name));
+    const top = signatureHtml(withPhoto, b("top"));
+    expect(top.indexOf(FOTO)).toBeLessThan(top.indexOf(person.name));
+  });
+
+  it("Signatur: ohne Foto-Position kein Foto", () => {
+    expect(signatureHtml(withPhoto, b("none"))).not.toContain(FOTO);
+  });
+
+  it("Signatur: fehlendes Foto nur in der Vorschau als Platzhalter", () => {
+    expect(signatureHtml(person, b("left"))).not.toContain("width=\"72\"");
+    expect(signatureHtml(person, b("left"), undefined, undefined, { placeholder: true })).toContain("width=\"72\"");
+  });
+
+  it("Visitenkarte: Foto erscheint in allen Logo-Positionen, Platzhalter nur in der Vorschau", () => {
+    for (const pos of ["top", "bottom", "right"] as const) {
+      for (const side of ["left", "right"] as const) {
+        expect(cardFront(withPhoto, b("none", side), "klar", pos)).toContain(FOTO);
+        expect(cardFront(person, b("none", side), "klar", pos)).not.toContain("mw-card-photo");
+        expect(cardFront(person, b("none", side), "klar", pos, { placeholder: true })).toContain("mw-card-photo");
+      }
+    }
+  });
+});

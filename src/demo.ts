@@ -1,4 +1,4 @@
-import { DEFAULT_LOGO_POS, type AppState } from "./types";
+import { DEFAULT_LOGO_POS, DEFAULT_PHOTO_POS, type AppState } from "./types";
 
 /** Beispiel-Logo, damit man ohne eigenes Logo sofort etwas sieht. */
 export const DEMO_LOGO =
@@ -35,6 +35,7 @@ export const DEMO_STATE: AppState = {
     font: "source-sans",
     style: "klar",
     logoPos: { ...DEFAULT_LOGO_POS },
+    photoPos: { ...DEFAULT_PHOTO_POS },
     logo: DEMO_LOGO,
     swatches: ["#1E5A6E", "#D39B35", "#6A7479"],
   },

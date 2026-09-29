@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
-import { LOGO_POS_OPTIONS, type CardLayout, type LetterLayout, type SignatureLayout } from "../types";
+import type { CardLayout, CardPhotoLayout, LetterLayout, SignatureLayout, SignaturePhotoLayout } from "../types";
 
 /*
-  Kleine Vorschaubildchen, die zeigen, wo das Logo sitzt.
-  Blau ist das Logo, die grauen Striche sind Text.
+  Kleine Vorschaubildchen, die zeigen, wo Logo oder Porträtfoto sitzen.
+  Blau ist das Logo, der graue Kreis das Foto, die Striche sind Text.
 */
 
 const LOGO = "var(--blue)";
@@ -88,23 +88,78 @@ const LETTER: Record<LetterLayout, ReactElement> = {
   right: letterPage(28),
 };
 
-type Kind = "signature" | "card" | "letter";
-const DRAWINGS: Record<Kind, Record<string, ReactElement>> = { signature: SIGNATURE, card: CARD, letter: LETTER };
+/* Porträtfoto: der graue Kreis ist das Foto */
+const PHOTO = "#8E8E93";
 
-interface Props<K extends Kind> {
-  kind: K;
-  value: string;
-  onChange: (id: (typeof LOGO_POS_OPTIONS)[K][number]["id"]) => void;
+const PHOTO_SIGNATURE: Record<SignaturePhotoLayout, ReactElement> = {
+  none: <>{bars(10, 12, [22, 16, 28, 18])}</>,
+  left: (
+    <>
+      <circle cx="14" cy="18" r="7" fill={PHOTO} />
+      {bars(25, 12, [18, 14, 22, 12])}
+    </>
+  ),
+  right: (
+    <>
+      {bars(7, 12, [18, 14, 22, 12])}
+      <circle cx="42" cy="18" r="7" fill={PHOTO} />
+    </>
+  ),
+  top: (
+    <>
+      <circle cx="13" cy="11" r="5.5" fill={PHOTO} />
+      {bars(7, 21, [22, 16, 28])}
+    </>
+  ),
+};
+
+const PHOTO_CARD: Record<CardPhotoLayout, ReactElement> = {
+  none: (
+    <>
+      <rect x="4" y="5" width="48" height="30" rx="2" fill="#fff" stroke={TEXT} />
+      {bars(9, 12, [18, 12, 22], 4.5)}
+    </>
+  ),
+  left: (
+    <>
+      <rect x="4" y="5" width="48" height="30" rx="2" fill="#fff" stroke={TEXT} />
+      <circle cx="15" cy="20" r="6" fill={PHOTO} />
+      {bars(25, 13, [16, 11, 20], 4.5)}
+    </>
+  ),
+  right: (
+    <>
+      <rect x="4" y="5" width="48" height="30" rx="2" fill="#fff" stroke={TEXT} />
+      {bars(9, 13, [16, 11, 20], 4.5)}
+      <circle cx="41" cy="20" r="6" fill={PHOTO} />
+    </>
+  ),
+};
+
+export const DRAWINGS = {
+  logoSignature: SIGNATURE,
+  logoCard: CARD,
+  logoLetter: LETTER,
+  photoSignature: PHOTO_SIGNATURE,
+  photoCard: PHOTO_CARD,
+} as const;
+
+interface Props<T extends string> {
+  options: { id: T; label: string }[];
+  drawings: Record<T, ReactElement>;
+  value: T;
+  onChange: (id: T) => void;
+  label: string;
 }
 
-export function LayoutPicker<K extends Kind>({ kind, value, onChange }: Props<K>) {
-  const options = LOGO_POS_OPTIONS[kind] as { id: (typeof LOGO_POS_OPTIONS)[K][number]["id"]; label: string }[];
+/** Auswahl mit kleinen Vorschaubildchen, wie ein Umschalter mit Bildern. */
+export function LayoutPicker<T extends string>({ options, drawings, value, onChange, label }: Props<T>) {
   return (
-    <div className="layout-picker" role="radiogroup" aria-label="Position des Logos">
+    <div className="layout-picker" role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button key={o.id} type="button" role="radio" aria-checked={value === o.id} className="layout-option" onClick={() => onChange(o.id)}>
           <svg viewBox="0 0 56 40" width="56" height="40" aria-hidden="true">
-            {DRAWINGS[kind][o.id]}
+            {drawings[o.id]}
           </svg>
           <span>{o.label}</span>
         </button>

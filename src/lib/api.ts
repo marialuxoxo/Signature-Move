@@ -16,7 +16,7 @@ export async function fetchStatus(): Promise<ApiStatus> {
 
 export class AiCheckError extends Error {}
 
-export async function runAiCheck(brand: Omit<Brand, "logo" | "swatches" | "logoPos">, logoPngBase64: string | null): Promise<AiCheckResult> {
+export async function runAiCheck(brand: Omit<Brand, "logo" | "swatches" | "logoPos" | "photoPos">, logoPngBase64: string | null): Promise<AiCheckResult> {
   const r = await fetch("/api/ai-check", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
