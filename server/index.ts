@@ -65,5 +65,5 @@ if (existsSync(dist)) {
 }
 
 app.listen(PORT, () => {
-  console.log(`Signature Move API läuft auf http://localhost:${PORT} (KI-Check ${anthropic ? "aktiv" : "aus"})`);
+  console.log(`Markenwerk API läuft auf http://localhost:${PORT} (KI-Check ${anthropic ? "aktiv" : "aus"})`);
 });

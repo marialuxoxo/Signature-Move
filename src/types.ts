@@ -42,7 +42,7 @@ export interface Person {
   email: string;
 }
 
-export type Tab = "signature" | "card" | "letter";
+export type Tab = "overview" | "signature" | "card" | "letter";
 
 export interface AppState {
   brand: Brand;

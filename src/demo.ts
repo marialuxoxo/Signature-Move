@@ -39,5 +39,5 @@ export const DEMO_STATE: AppState = {
     { id: "p3", name: "Leonie Weber", role: "Mietverwaltung", phone: "0261 123 45-17", mobile: "0151 000 00 17", email: "l.weber@rheinblick-verwaltung.de" },
   ],
   activeId: "p1",
-  tab: "signature",
+  tab: "overview",
 };

@@ -1,17 +1,21 @@
 import type { ReactNode } from "react";
 
-/** Zeigt eine Druckvorlage wie einen Andruck: mit Schnittmarken und Farbkontrollstreifen. */
-export function ProofSheet({ label, className, children }: { label: string; className?: string; children: ReactNode }) {
+/**
+ * Zeigt eine Druckvorlage wie einen Andruck zur Abnahme:
+ * mit Schnittmarken, Farbkontrollstreifen und Maßangabe.
+ */
+export function ProofSheet({ label, size, className, children }: { label: string; size: string; className?: string; children: ReactNode }) {
   return (
-    <div className={`proof ${className ?? ""}`}>
-      <div className="frame">
+    <figure className={`proof ${className ?? ""}`}>
+      <div className="proof-frame">
         <span className="crop tl" /><span className="crop tr" /><span className="crop bl" /><span className="crop br" />
-        <div className="obj">{children}</div>
+        <div className="proof-paper">{children}</div>
       </div>
-      <div className="slug">
+      <figcaption className="proof-slug">
         <span className="cmyk" aria-hidden="true"><i className="c" /><i className="m" /><i className="y" /><i className="k" /></span>
-        {label}
-      </div>
-    </div>
+        <span className="proof-label">{label}</span>
+        <span className="proof-size">{size}</span>
+      </figcaption>
+    </figure>
   );
 }

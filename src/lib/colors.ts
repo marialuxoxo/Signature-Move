@@ -36,6 +36,13 @@ export function contrast(a: string, b: string): number {
 export const INK = "#1C2830";
 export const WHITE = "#FFFFFF";
 
+/** Mischt eine Farbe mit Weiß. amount 0 ergibt Weiß, 1 die Farbe selbst. */
+export function tint(hex: string, amount: number): string {
+  const a = Math.max(0, Math.min(1, amount));
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToHex(255 + (r - 255) * a, 255 + (g - 255) * a, 255 + (b - 255) * a);
+}
+
 /** Textfarbe, die auf einer Hintergrundfarbe am besten lesbar ist. */
 export function textOn(background: string): string {
   return contrast(background, WHITE) >= contrast(background, INK) ? WHITE : INK;

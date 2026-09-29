@@ -1,12 +1,18 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { Brand } from "../types";
+import { LAYOUT_STYLES } from "../types";
 import type { Action } from "../state/useAppState";
-import { FONTS } from "../lib/fonts";
+import { FONTS, getFont } from "../lib/fonts";
 import { extractColors, loadImage, readFileAsDataUrl } from "../lib/browser";
 import { AiCheck } from "./AiCheck";
+import { Section } from "./Section";
+import { UploadIcon } from "./Icons";
 
 const ACCEPTED = ["image/png", "image/jpeg", "image/svg+xml", "image/webp"];
 const MAX_BYTES = 3 * 1024 * 1024;
+
+type ColorKey = "mainColor" | "accentColor";
+const COLOR_LABEL: Record<ColorKey, string> = { mainColor: "Hauptfarbe", accentColor: "Akzentfarbe" };
 
 interface Props {
   brand: Brand;
@@ -16,9 +22,10 @@ interface Props {
 }
 
 export function BrandPanel({ brand, dispatch, aiAvailable, notify }: Props) {
-  const [target, setTarget] = useState<"mainColor" | "accentColor">("mainColor");
+  const [target, setTarget] = useState<ColorKey>("mainColor");
   const [dragging, setDragging] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const ids = useId();
 
   async function handleFile(file?: File) {
     if (!file) return;
@@ -39,73 +46,98 @@ export function BrandPanel({ brand, dispatch, aiAvailable, notify }: Props) {
       });
       const small = file.type !== "image/svg+xml" && img.naturalWidth > 0 && img.naturalWidth < 400;
       if (!colors.length) notify("Logo übernommen. Farben bitte von Hand wählen.");
-      else notify(`${colors.length} Farben aus dem Logo erkannt.${small ? " Hinweis: Das Logo ist klein und könnte im Druck unscharf werden." : ""}`, small);
+      else notify(`${colors.length} Farben aus dem Logo erkannt.${small ? " Das Logo ist klein und könnte im Druck unscharf werden." : ""}`, small);
     } catch {
       notify("Das Logo ließ sich nicht öffnen. Bitte eine andere Datei versuchen.", true);
     }
   }
 
-  return (
-    <section className="block" aria-labelledby="h-brand">
-      <h2 id="h-brand">Logo und Farben</h2>
-      <p className="hint">Logo als PNG, JPG oder SVG. Die Farben werden direkt aus dem Logo gelesen.</p>
+  const styleLabel = LAYOUT_STYLES.find((s) => s.id === brand.style)?.label ?? "Klar";
+  const summary = (
+    <>
+      <span className="mini-swatch" style={{ background: brand.mainColor }} />
+      <span className="mini-swatch" style={{ background: brand.accentColor }} />
+      {getFont(brand.font).name}, Gestaltung {styleLabel}
+    </>
+  );
 
+  return (
+    <Section step={1} title="Marke" summary={summary} defaultOpen>
       <label
-        className={`drop${dragging ? " over" : ""}`}
+        className={`logo-drop${dragging ? " is-over" : ""}`}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
       >
-        <div className="logo-box"><img src={brand.logo} alt="Aktuelles Logo" /></div>
-        <div><b>Logo hochladen</b><span>Klicken oder Datei hierher ziehen</span></div>
+        <span className="logo-drop-preview"><img src={brand.logo} alt="Aktuelles Logo" /></span>
+        <span className="logo-drop-text">
+          <span className="logo-drop-action"><UploadIcon /> Logo ersetzen</span>
+          <span className="logo-drop-hint">PNG, JPG, SVG oder WebP bis 3 MB. Datei hierher ziehen oder klicken.</span>
+        </span>
         <input
           ref={input}
+          id={`${ids}-logo`}
           type="file"
           accept={ACCEPTED.join(",")}
           onChange={(e) => { handleFile(e.target.files?.[0]); if (input.current) input.current.value = ""; }}
         />
       </label>
 
-      <div className="seg" role="group" aria-label="Klick auf eine Farbe setzt">
-        <button type="button" aria-pressed={target === "mainColor"} onClick={() => setTarget("mainColor")}>Klick setzt Hauptfarbe</button>
-        <button type="button" aria-pressed={target === "accentColor"} onClick={() => setTarget("accentColor")}>Akzentfarbe</button>
-      </div>
-      <div className="swatches" aria-label="Farben aus dem Logo">
-        {brand.swatches.map((hex) => (
-          <button
-            key={hex}
-            type="button"
-            className="swatch"
-            style={{ background: hex }}
-            title={hex}
-            aria-label={`Farbe ${hex} übernehmen`}
-            onClick={() => dispatch({ type: "brand", patch: { [target]: hex } })}
-          />
-        ))}
-      </div>
+      <div className="group">
+        <h3 className="group-title">Farben</h3>
+        <div className="color-chips">
+          {(Object.keys(COLOR_LABEL) as ColorKey[]).map((key) => (
+            <label className="color-chip" key={key} htmlFor={`${ids}-${key}`}>
+              <span className="color-chip-fill" style={{ background: brand[key] }} />
+              <span className="color-chip-meta">
+                <span className="color-chip-name">{COLOR_LABEL[key]}</span>
+                <span className="color-chip-hex">{brand[key].toUpperCase()}</span>
+              </span>
+              <input
+                id={`${ids}-${key}`}
+                type="color"
+                value={brand[key]}
+                onChange={(e) => dispatch({ type: "brand", patch: { [key]: e.target.value.toUpperCase() } })}
+              />
+            </label>
+          ))}
+        </div>
 
-      <div className="colors">
-        {(["mainColor", "accentColor"] as const).map((key) => (
-          <div className="colorfield" key={key}>
-            <input
-              type="color"
-              value={brand[key]}
-              aria-label={key === "mainColor" ? "Hauptfarbe" : "Akzentfarbe"}
-              onChange={(e) => dispatch({ type: "brand", patch: { [key]: e.target.value.toUpperCase() } })}
-            />
-            <div><small>{key === "mainColor" ? "Hauptfarbe" : "Akzentfarbe"}</small><code>{brand[key].toUpperCase()}</code></div>
+        {brand.swatches.length > 0 && (
+          <div className="from-logo">
+            <span className="from-logo-label">Aus dem Logo erkannt</span>
+            <div className="swatches">
+              {brand.swatches.map((hex) => (
+                <button
+                  key={hex}
+                  type="button"
+                  className="swatch"
+                  style={{ background: hex }}
+                  title={`${hex} als ${COLOR_LABEL[target]} übernehmen`}
+                  aria-label={`${hex} als ${COLOR_LABEL[target]} übernehmen`}
+                  onClick={() => dispatch({ type: "brand", patch: { [target]: hex } })}
+                />
+              ))}
+            </div>
+            <div className="segmented segmented-small" role="radiogroup" aria-label="Logofarbe übernehmen als">
+              {(Object.keys(COLOR_LABEL) as ColorKey[]).map((key) => (
+                <button key={key} type="button" role="radio" aria-checked={target === key} onClick={() => setTarget(key)}>
+                  {key === "mainColor" ? "als Haupt" : "als Akzent"}
+                </button>
+              ))}
+            </div>
           </div>
-        ))}
+        )}
       </div>
 
-      <label className="field">
-        Hausschrift
-        <select value={brand.font} onChange={(e) => dispatch({ type: "brand", patch: { font: e.target.value as Brand["font"] } })}>
+      <div className="field">
+        <label htmlFor={`${ids}-font`}>Hausschrift</label>
+        <select id={`${ids}-font`} value={brand.font} onChange={(e) => dispatch({ type: "brand", patch: { font: e.target.value as Brand["font"] } })}>
           {FONTS.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
         </select>
-      </label>
+      </div>
 
       {aiAvailable && <AiCheck brand={brand} dispatch={dispatch} notify={notify} />}
-    </section>
+    </Section>
   );
 }

@@ -5,6 +5,7 @@ import { fontByName } from "../lib/fonts";
 import { loadImage, toPngBase64 } from "../lib/browser";
 import { runAiCheck } from "../lib/api";
 import { LAYOUT_STYLES } from "../types";
+import { SparkIcon } from "./Icons";
 
 interface Props {
   brand: Brand;
@@ -37,31 +38,37 @@ export function AiCheck({ brand, dispatch, notify }: Props) {
   const font = result ? fontByName(result.schrift) : undefined;
   const style = result ? LAYOUT_STYLES.find((s) => s.id === result.stil) : undefined;
 
+  const suggestion = (label: string, value: string, reason: string, apply: () => void, done: string) => (
+    <div className="suggestion">
+      <div className="suggestion-text">
+        <span className="suggestion-label">{label}</span>
+        <span className="suggestion-value">{value}</span>
+        {reason && <span className="suggestion-reason">{reason}</span>}
+      </div>
+      <button className="btn btn-secondary btn-small" type="button" onClick={() => { apply(); notify(done); }}>
+        Übernehmen
+      </button>
+    </div>
+  );
+
   return (
-    <div className="ai">
-      <button className="btn ghost" type="button" onClick={run} disabled={busy}>KI-Check der Marke</button>
-      <div className="ai-status" aria-live="polite">{status}</div>
+    <div className="ai-check">
+      <div className="ai-check-head">
+        <h3 className="group-title">KI-Check</h3>
+        <p className="ai-check-intro">Prüft Logo, Farben und Lesbarkeit und schlägt Schrift, Gestaltung und Claim vor.</p>
+      </div>
+      <button className="btn btn-secondary" type="button" onClick={run} disabled={busy}>
+        <SparkIcon /> {busy ? "Wird geprüft" : "Marke prüfen lassen"}
+      </button>
+      {status && <p className="ai-status" aria-live="polite">{status}</p>}
       {result && (
-        <div className="ai-out">
+        <div className="ai-result">
           {result.einschaetzung && <p>{result.einschaetzung}</p>}
           {result.farben && <p>{result.farben}</p>}
-          {font && (
-            <div className="sugg">
-              <span>Schrift: <b>{font.name}</b><br />{result.schrift_grund}</span>
-              <button className="btn small ghost" type="button" onClick={() => { dispatch({ type: "brand", patch: { font: font.id } }); notify("Schrift übernommen."); }}>Übernehmen</button>
-            </div>
-          )}
-          {style && (
-            <div className="sugg">
-              <span>Gestaltung: <b>{style.label}</b><br />{result.stil_grund}</span>
-              <button className="btn small ghost" type="button" onClick={() => { dispatch({ type: "brand", patch: { style: style.id } }); notify("Gestaltung übernommen."); }}>Übernehmen</button>
-            </div>
-          )}
+          {font && suggestion("Schrift", font.name, result.schrift_grund, () => dispatch({ type: "brand", patch: { font: font.id } }), "Schrift übernommen.")}
+          {style && suggestion("Gestaltung", style.label, result.stil_grund, () => dispatch({ type: "brand", patch: { style: style.id } }), "Gestaltung übernommen.")}
           {result.claims.slice(0, 3).map((c) => (
-            <div className="sugg" key={c}>
-              <span>Claim: {c}</span>
-              <button className="btn small ghost" type="button" onClick={() => { dispatch({ type: "brand", patch: { claim: c } }); notify("Claim übernommen."); }}>Übernehmen</button>
-            </div>
+            <div key={c}>{suggestion("Claim", c, "", () => dispatch({ type: "brand", patch: { claim: c } }), "Claim übernommen.")}</div>
           ))}
         </div>
       )}

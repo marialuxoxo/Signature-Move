@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useId, useRef, type ReactElement } from "react";
 import type { AppState, Person, Tab } from "../types";
 import type { Action } from "../state/useAppState";
 import { LAYOUT_STYLES } from "../types";
@@ -7,11 +7,16 @@ import { CARD_H, CARD_W, cardBack, cardFront, cardSheet } from "../templates/bus
 import { A4_H, A4_W, letterhead } from "../templates/letterhead";
 import { svgDocument } from "../templates/svg";
 import { copyHtml, downloadFile } from "../lib/browser";
+import { tint } from "../lib/colors";
 import { slug } from "../lib/text";
 import { ProofSheet } from "./ProofSheet";
+import { Showcase } from "./Showcase";
+import { SvgMarkup } from "./SvgMarkup";
+import { CopyIcon, DownloadIcon } from "./Icons";
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "signature", label: "E-Mail-Signatur" },
+  { id: "overview", label: "Übersicht" },
+  { id: "signature", label: "Signatur" },
   { id: "card", label: "Visitenkarte" },
   { id: "letter", label: "Briefkopf" },
 ];
@@ -23,18 +28,15 @@ interface Props {
   notify: (msg: string, isError?: boolean) => void;
 }
 
-/** Alle Vorlagen-HTML ist vollständig maskiert (siehe lib/text.ts), daher sicher für innerHTML. */
-function Svg({ markup }: { markup: string }) {
-  return <div className="svg-host" dangerouslySetInnerHTML={{ __html: markup }} />;
-}
-
 export function Preview({ state, active, dispatch, notify }: Props) {
   const { brand, team, tab } = state;
   const sigRef = useRef<HTMLDivElement>(null);
+  const ids = useId();
+  const open = (t: Tab) => dispatch({ type: "tab", tab: t });
 
   async function copySignature() {
     const html = signatureHtml(active, brand);
-    if (await copyHtml(html)) return notify("Signatur kopiert. In Outlook unter Signaturen einfügen.");
+    if (await copyHtml(html)) return notify("Signatur kopiert. Jetzt in Outlook unter Signaturen einfügen.");
     // Ausweichweg: sichtbare Signatur markieren und kopieren
     const el = sigRef.current;
     const sel = window.getSelection();
@@ -47,81 +49,116 @@ export function Preview({ state, active, dispatch, notify }: Props) {
       sel.removeAllRanges();
       if (ok) return notify("Signatur kopiert.");
     }
-    notify("Kopieren ist hier gesperrt. Bitte den Download nutzen.", true);
+    notify("Kopieren ist hier gesperrt. Lade die Signatur stattdessen herunter.", true);
   }
 
+  const actions: Record<Tab, ReactElement | null> = {
+    overview: null,
+    signature: (
+      <>
+        <button className="btn btn-secondary" type="button" onClick={() => downloadFile(`signatur-${slug(active.name)}.html`, signatureDocument(active, brand), "text/html")}>
+          <DownloadIcon /> Als HTML
+        </button>
+        <button className="btn btn-primary" type="button" onClick={copySignature}>
+          <CopyIcon /> Signatur kopieren
+        </button>
+      </>
+    ),
+    card: (
+      <button className="btn btn-primary" type="button" onClick={() => downloadFile(`visitenkarte-${slug(active.name)}.svg`, cardSheet(active, brand), "image/svg+xml")}>
+        <DownloadIcon /> Druckbogen laden
+      </button>
+    ),
+    letter: (
+      <button className="btn btn-primary" type="button" onClick={() => downloadFile(`briefkopf-${slug(brand.name)}.svg`, svgDocument(letterhead(active, brand), A4_W, A4_H, "Briefkopf", true), "image/svg+xml")}>
+        <DownloadIcon /> Briefkopf laden
+      </button>
+    ),
+  };
+
+  const people = `${team.length} ${team.length === 1 ? "Person" : "Personen"}`;
+
   return (
-    <main>
-      <div className="bar">
-        <div className="tabs" role="tablist" aria-label="Vorlage">
-          {TABS.map((t) => (
-            <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => dispatch({ type: "tab", tab: t.id })}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <label>
-          Gestaltung
-          <select value={brand.style} onChange={(e) => dispatch({ type: "brand", patch: { style: e.target.value as typeof brand.style } })}>
-            {LAYOUT_STYLES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-          </select>
-        </label>
-        <label>
-          Für
-          <select value={active.id} onChange={(e) => dispatch({ type: "select", id: e.target.value })}>
-            {team.map((p) => <option key={p.id} value={p.id}>{p.name || "Neue Person"}</option>)}
-          </select>
-        </label>
+    <main className="canvas">
+      <div className="tabs" role="tablist" aria-label="Ansicht">
+        {TABS.map((t) => (
+          <button key={t.id} role="tab" type="button" aria-selected={tab === t.id} onClick={() => open(t.id)}>
+            <span>{t.label}</span>
+          </button>
+        ))}
       </div>
 
-      {tab === "signature" && (
-        <>
-          <div className="mail">
-            <div className="mail-head"><b>An:</b> eigentuemer@beispiel.de&nbsp;&nbsp;&nbsp;<b>Betreff:</b> Einladung zur Eigentümerversammlung</div>
-            <div className="mail-body">
-              <p className="fake">Guten Tag Herr Beispiel,</p>
-              <p className="fake">anbei erhalten Sie die Einladung samt Tagesordnung.</p>
-              <p className="fake last">Viele Grüße</p>
-              <div ref={sigRef} dangerouslySetInnerHTML={{ __html: signatureHtml(active, brand) }} />
+      <div className="toolbar">
+        <div className="toolbar-group">
+          <span className="toolbar-label" id={`${ids}-style`}>Gestaltung</span>
+          <div className="segmented" role="radiogroup" aria-labelledby={`${ids}-style`}>
+            {LAYOUT_STYLES.map((s) => (
+              <button key={s.id} type="button" role="radio" aria-checked={brand.style === s.id} title={s.hint} onClick={() => dispatch({ type: "brand", patch: { style: s.id } })}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="toolbar-group">
+          <label className="toolbar-label" htmlFor={`${ids}-person`}>Für</label>
+          <select id={`${ids}-person`} className="toolbar-select" value={active.id} onChange={(e) => dispatch({ type: "select", id: e.target.value })}>
+            {team.map((p) => <option key={p.id} value={p.id}>{p.name || "Neue Person"}</option>)}
+          </select>
+        </div>
+        {actions[tab] && <div className="toolbar-actions">{actions[tab]}</div>}
+      </div>
+
+      <div className={`stage stage-${tab}`} style={{ background: tint(brand.mainColor, 0.13) }}>
+        {tab === "overview" && (
+          <>
+            <div className="hero">
+              <h2 className="hero-title">Alles fertig. Fürs ganze Team.</h2>
+              <p className="hero-sub">Signatur, Visitenkarte und Briefkopf für {people}, alles aus einem Logo. Klick auf ein Teil, um es groß zu sehen und herunterzuladen.</p>
+            </div>
+            <Showcase brand={brand} person={active} onOpen={open} />
+          </>
+        )}
+
+        {tab === "signature" && (
+          <div className="composer">
+            <div className="composer-bar"><i /><i /><i /><span>Neue Nachricht</span></div>
+            <div className="composer-field"><span>An</span>eigentuemer@beispiel.de</div>
+            <div className="composer-field"><span>Betreff</span>Einladung zur Eigentümerversammlung</div>
+            <div className="composer-body">
+              <p className="composer-text">Guten Tag Herr Beispiel,</p>
+              <p className="composer-text">anbei erhalten Sie die Einladung samt Tagesordnung.</p>
+              <p className="composer-text composer-text-last">Viele Grüße</p>
+              <div className="composer-signature" ref={sigRef} dangerouslySetInnerHTML={{ __html: signatureHtml(active, brand) }} />
             </div>
           </div>
-          <div className="actions">
-            <button className="btn" type="button" onClick={copySignature}>Signatur kopieren</button>
-            <button className="btn ghost" type="button" onClick={() => downloadFile(`signatur-${slug(active.name)}.html`, signatureDocument(active, brand), "text/html")}>
-              Als HTML herunterladen
-            </button>
-          </div>
-          <p className="note">Hinweis: Im Moment steckt das Logo direkt in der Signatur. Für den Echtbetrieb muss es auf einem Server liegen, damit Outlook es zuverlässig anzeigt.</p>
-        </>
-      )}
+        )}
 
-      {tab === "card" && (
-        <>
+        {tab === "card" && (
           <div className="proofs">
-            <ProofSheet label="Vorderseite, 85 × 55 mm" className="card-proof"><Svg markup={svgDocument(cardFront(active, brand), CARD_W, CARD_H, "Visitenkarte Vorderseite")} /></ProofSheet>
-            <ProofSheet label="Rückseite, 85 × 55 mm" className="card-proof"><Svg markup={svgDocument(cardBack(brand), CARD_W, CARD_H, "Visitenkarte Rückseite")} /></ProofSheet>
+            <ProofSheet label="Vorderseite" size="85 × 55 mm" className="proof-card">
+              <SvgMarkup markup={svgDocument(cardFront(active, brand), CARD_W, CARD_H, "Visitenkarte Vorderseite")} />
+            </ProofSheet>
+            <ProofSheet label="Rückseite" size="85 × 55 mm" className="proof-card">
+              <SvgMarkup markup={svgDocument(cardBack(brand), CARD_W, CARD_H, "Visitenkarte Rückseite")} />
+            </ProofSheet>
           </div>
-          <div className="actions">
-            <button className="btn" type="button" onClick={() => downloadFile(`visitenkarte-${slug(active.name)}.svg`, cardSheet(active, brand), "image/svg+xml")}>
-              Druckbogen herunterladen (SVG)
-            </button>
-          </div>
-          <p className="note">Nächster Ausbauschritt: druckfertige PDF mit 3 mm Beschnitt und CMYK-Farben.</p>
-        </>
-      )}
+        )}
 
-      {tab === "letter" && (
-        <>
+        {tab === "letter" && (
           <div className="proofs">
-            <ProofSheet label="DIN A4 nach DIN 5008, Form B" className="letter-proof"><Svg markup={svgDocument(letterhead(active, brand), A4_W, A4_H, "Briefkopf DIN A4")} /></ProofSheet>
+            <ProofSheet label="Briefkopf nach DIN 5008" size="210 × 297 mm" className="proof-letter">
+              <SvgMarkup markup={svgDocument(letterhead(active, brand), A4_W, A4_H, "Briefkopf DIN A4")} />
+            </ProofSheet>
           </div>
-          <div className="actions">
-            <button className="btn" type="button" onClick={() => downloadFile(`briefkopf-${slug(brand.name)}.svg`, svgDocument(letterhead(active, brand), A4_W, A4_H, "Briefkopf", true), "image/svg+xml")}>
-              Briefkopf herunterladen (SVG)
-            </button>
-          </div>
-          <p className="note">Nächster Ausbauschritt: Briefkopf als Word-Vorlage, in die man direkt hineinschreibt.</p>
-        </>
+        )}
+      </div>
+
+      {tab !== "overview" && (
+        <p className="stage-note">
+          {tab === "signature" && "Im Prototyp steckt das Logo direkt in der Signatur. Im Echtbetrieb liegt es auf einem Server, damit jedes Mailprogramm es zuverlässig anzeigt."}
+          {tab === "card" && "Als Nächstes: druckfertige PDF mit 3 mm Beschnitt und CMYK-Farben, auf Wunsch direkt an die Druckerei."}
+          {tab === "letter" && "Als Nächstes: der Briefkopf als Word-Vorlage, in die man direkt hineinschreibt."}
+        </p>
       )}
     </main>
   );

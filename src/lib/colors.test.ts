@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contrast, hexToRgb, pickColors, readableOnWhite, rgbToHex, textOn } from "./colors";
+import { contrast, hexToRgb, pickColors, readableOnWhite, rgbToHex, textOn, tint } from "./colors";
 
 describe("Farbumrechnung", () => {
   it("wandelt Hex in RGB und zurück", () => {
@@ -40,5 +40,13 @@ describe("Farben aus Logo lesen", () => {
   it("fasst sehr ähnliche Farben zusammen", () => {
     const px = pixels([[30, 90, 110, 255], [34, 94, 114, 255]], [100, 100]);
     expect(pickColors(px)).toHaveLength(1);
+  });
+});
+
+describe("Farbe aufhellen", () => {
+  it("mischt mit Weiß", () => {
+    expect(tint("#1E5A6E", 0)).toBe("#FFFFFF");
+    expect(tint("#1E5A6E", 1)).toBe("#1E5A6E");
+    expect(tint("#000000", 0.5)).toBe("#808080");
   });
 });

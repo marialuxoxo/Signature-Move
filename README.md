@@ -1,4 +1,4 @@
-# Signature Move
+# Markenwerk
 
 Ein Generator für die komplette Geschäftsausstattung einer Firma: **E-Mail-Signaturen, Visitenkarten und Briefköpfe**, erzeugt aus einem Logo und ein paar Firmendaten.
 
