@@ -58,7 +58,7 @@ src/
   components/    Oberfläche (React)
   lib/           Farben, Schriften, Hilfsfunktionen
   state/         Zustand der App und Speicherung
-  demo.ts        Beispielfirma „Hausverwaltung Rheinblick“
+  demo.ts        Erfundene Beispielfirma „Beispiel Hausverwaltung GmbH“
 server/
   index.ts       Kleiner Server: liefert die App aus und spricht mit Claude
   aiCheck.ts     Anweisung an Claude und Auswertung der Antwort

@@ -3,7 +3,7 @@ import type { AppState, Brand, Person, Tab } from "../types";
 import { DEMO_LOGO, DEMO_STATE } from "../demo";
 import { uid } from "../lib/text";
 
-const STORAGE_KEY = "signature-move-v1";
+const STORAGE_KEY = "markenwerk-v2";
 
 export type Action =
   | { type: "brand"; patch: Partial<Brand> }

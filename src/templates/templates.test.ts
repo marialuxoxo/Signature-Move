@@ -15,8 +15,8 @@ describe("E-Mail-Signatur", () => {
     const html = signatureHtml(person, brand, style);
     expect(html).toContain("Sabine Krämer");
     expect(html).toContain("Objektbetreuung WEG");
-    expect(html).toContain("HRB 12345");
-    expect(html).toContain("mailto:s.kraemer@rheinblick-verwaltung.de");
+    expect(html).toContain("HRB 00000");
+    expect(html).toContain("mailto:s.kraemer@beispiel-hv.example");
   });
   it("zeigt den Notdienst nur, wenn er eingetragen ist", () => {
     expect(signatureHtml(person, brand)).toContain("Notdienst");
@@ -35,7 +35,7 @@ describe("E-Mail-Signatur", () => {
 describe("Visitenkarte", () => {
   it.each(styles)("Vorder- und Rückseite enthalten die richtigen Daten (%s)", (style) => {
     expect(cardFront(person, brand, style)).toContain("Sabine Krämer");
-    expect(cardBack(brand, style)).toContain(style === "ruhig" ? "Verwaltung mit Weitblick" : "Hausverwaltung Rheinblick GmbH");
+    expect(cardBack(brand, style)).toContain(style === "ruhig" ? "Immobilienverwaltung in Köln" : "Beispiel Hausverwaltung GmbH");
   });
   it("Druckbogen ist ein gültiges SVG mit Schnittmarken und echten Maßen", () => {
     const svg = cardSheet(person, brand);
@@ -51,7 +51,7 @@ describe("Briefkopf", () => {
     expect(svg).toContain("[Empfänger]");
     expect(svg).toContain("Ihr Ansprechpartner");
     expect(svg).toContain("23.9.2026");
-    expect(svg).toContain("USt-IdNr. DE123456789");
+    expect(svg).toContain("USt-IdNr. DE000000000");
   });
 });
 

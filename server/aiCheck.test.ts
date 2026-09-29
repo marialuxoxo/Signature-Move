@@ -7,7 +7,7 @@ const { logo: _l, swatches: _s, ...brand } = DEMO_STATE.brand;
 describe("KI-Check", () => {
   it("baut eine Anweisung mit Firmendaten und Kontrastwerten", () => {
     const p = buildPrompt(brand, true);
-    expect(p).toContain("Hausverwaltung Rheinblick GmbH");
+    expect(p).toContain("Beispiel Hausverwaltung GmbH");
     expect(p).toContain("Kontrast zu Weiß");
     expect(p).toContain("Das Logo liegt als Bild bei.");
   });
